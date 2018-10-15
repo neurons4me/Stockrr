@@ -50,11 +50,14 @@ def RSI_checker(ticker):
         working_file[counter] = historical_data[item]
         output_file.append(working_file[counter])
         counter += 1
-    if float(output_file[1]['RSI']) <= RSI_trigger_oversold:
-        return 2
-    elif float(output_file[1]['RSI']) >= RSI_trigger_overbought:
-        return 0
-    else:
+    try:
+        if float(output_file[1]['RSI']) <= RSI_trigger_oversold:
+            return 2
+        elif float(output_file[1]['RSI']) >= RSI_trigger_overbought:
+            return 0
+        else:
+            return 1
+    except IndexError:
         return 1
 
 
@@ -69,20 +72,25 @@ def MOM_is_positive(ticker):
         working_file[counter] = historical_data[item]
         output_file.append(working_file[counter])
         counter += 1
-    if float(output_file[1]['MOM']) > 1:
-        return True
-    else:
+    try:
+        if float(output_file[1]['MOM']) > 1:
+            return True
+        else:
+            return False
+    except IndexError:
         return False
 
 
 def check_watchlist():
-    for stock in ticker_list:
-        if MOM_is_positive(stock) == True and RSI_checker(stock) == 2:
-            print('{} {}'.format(stock, 'is a candidate!'))
-        else:
-            print
-        time.sleep(30)
+    for stock in data_importer.import_watchlist():
+        if MOM_is_positive(stock) and RSI_checker(stock) == 2:
+            print('{} {}'.format(stock, ' is a candidate!'))
+        #else:
+            #print('{}{}'.format(stock , ' is not a candidate.'))
+        time.sleep(25)
 
+
+check_watchlist()
 # #main menu
 # exit_loop = False
 #

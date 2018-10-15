@@ -31,3 +31,12 @@ def request_MOM(symbol):
     url = str(url_part_one) + str(symbol) + str(url_part_two) + str(API_key)
     r = requests.get(url)
     return r.json()
+
+def import_watchlist():
+    with open('watchlist.txt') as watchlist:
+        lines = watchlist.readlines()
+        output_list = []
+        for line in lines:
+            currentline = line.rstrip()
+            output_list.append(currentline)
+        return output_list
