@@ -1,10 +1,12 @@
 import csv
 import datetime
 
+
 def name_builder(symbol, date, report_type):
     return str(symbol) + '_' + str(report_type) + '_' + date + '.csv'
 
-#takes a dictionary with symbol, report_type, report date, field_one_name, and field_two_name data as a header and any two other fields as main data and generates a simple report in csv format
+
+# takes a dictionary with symbol, report_type, report date, field_one_name, and field_two_name data as a header and any two other fields as main data and generates a simple report in csv format
 # def to_CSV(report):
 #     dictionary = report
 #     symbol = dictionary['symbol']
@@ -34,4 +36,3 @@ def to_CSV(report_list, report_title):
         writer = csv.writer(csvfile)
         for line in report_list:
             writer.writerow(line)
-

@@ -1,40 +1,37 @@
 import time
 import data_importer
 import data_exporter
-import datetime
 
 debug_mode = False
 RSI_codes = {
-    0 : "Overbought",
-    1 : "Neutral",
-    2 : "Oversold",
-    3 : "Data Error: Bad Header",
-    4 : "Data Error: Bad Data Body",
-    5 : "Data Error: API Call Rate Exceeded"
+    0: "Overbought",
+    1: "Neutral",
+    2: "Oversold",
+    3: "Data Error: Bad Header",
+    4: "Data Error: Bad Data Body",
+    5: "Data Error: API Call Rate Exceeded"
 }
 MOM_codes = {
-    0 : "Negative",
-    1 : "Neutral",
-    2 : "Positive",
-    3 : "Data Error: Bad Header",
-    4 : "Data Error: Bad Data Body",
-    5 : "Data Error: API Call Rate Exceeded"
+    0: "Negative",
+    1: "Neutral",
+    2: "Positive",
+    3: "Data Error: Bad Header",
+    4: "Data Error: Bad Data Body",
+    5: "Data Error: API Call Rate Exceeded"
 }
 
 RSI_trigger_oversold = 30
 RSI_trigger_overbought = 70
-sleep_time = 25
+sleep_time = 28
 
-#TODO clean up main.py... some of these functions make sense to belong to their own module
-#TODO add logging and error handling
-#TODO clean up according to PEP8
-#TODO add option of calling functions with custom settings and storing defaults in an easily accesable config file
-#TODO add CLI
+
+# TODO clean up main.py... some of these functions make sense to belong to their own module
+# TODO add logging and error handling
+# TODO add option of calling functions with custom settings and storing defaults in an easily accesable config file
+# TODO add CLI
 
 
 def RSI_checker(ticker):
-
-
     # Return Code Key
     # 0 = overbought
     # 1 = neutral
@@ -44,12 +41,13 @@ def RSI_checker(ticker):
     # 5 = Data Error: API Call Rate Exceeded
     try:
         historical_data = data_importer.request_RSI(str(ticker))
-        if historical_data == {"Information": "Thank you for using Alpha Vantage! Please visit https://www.alphavantage.co/premium/ if you would like to have a higher API call volume."}:
+        if historical_data == {
+            "Information": "Thank you for using Alpha Vantage! Please visit https://www.alphavantage.co/premium/ if you would like to have a higher API call volume."}:
             return 5
         historical_data = (historical_data['Technical Analysis: RSI'])
     except KeyError:
         return 3
-    output_file= []
+    output_file = []
     working_file = {}
     counter = 1
     for item in historical_data:
@@ -70,8 +68,6 @@ def RSI_checker(ticker):
 
 
 def MOM_checker(ticker):
-
-
     # Return Code Key
     # 0 = Negative
     # 1 = Neutral
@@ -82,12 +78,13 @@ def MOM_checker(ticker):
     try:
         # TODO refactor variable name... historical_data does not make much sense
         historical_data = data_importer.request_MOM(str(ticker))
-        if historical_data == {"Information": "Thank you for using Alpha Vantage! Please visit https://www.alphavantage.co/premium/ if you would like to have a higher API call volume."}:
+        if historical_data == {
+            "Information": "Thank you for using Alpha Vantage! Please visit https://www.alphavantage.co/premium/ if you would like to have a higher API call volume."}:
             return 5
         historical_data = (historical_data['Technical Analysis: MOM'])
     except KeyError:
         return 3
-    output_file= []
+    output_file = []
     working_file = {}
     counter = 1
     for item in historical_data:
@@ -107,6 +104,40 @@ def MOM_checker(ticker):
         return 4
 
 
+def check_portfolio():
+    start_time = time.time()
+    counter = 0
+    output_list = [["TICK", 'RSI', 'PRICE NOW', 'BUY PRICE']]
+    ticker_list = data_importer.import_portfolio()
+    estimate_time = round(len(ticker_list) * sleep_time / 60)
+    print('{} {}'.format(estimate_time, ' minutes expected runtime'))
+    for stock in ticker_list:
+        # ticker_list (from portfolio.txt) example [['AAPL', '221.45'],['GOOG', '445.87']]
+        # it needs to be a list of lists with ticker and buy price
+        # TODO create Bolinger_band_checker()
+        RSI_status = RSI_checker(stock[0])
+        stock_price = data_importer.request_IEX_price(stock[0])
+
+        output_item = [stock[0], RSI_codes[RSI_status], stock_price, stock[1]]
+        output_list.append(output_item)
+        if RSI_status == 0:
+            print('{} {}'.format(stock[0], ' is a candidate!'))
+        else:
+            if debug_mode:
+                print('{} {} {}'.format(stock[0], ' | RSI ', RSI_status))
+        counter += 1
+        if counter % 5 == 0:
+            print('{} {}'.format(counter, ' stocks have been checked.'))
+        time.sleep(sleep_time)
+    data_exporter.to_CSV(output_list, "Portfolio Sell Signal Checkup")
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    elapsed_time_minutes = elapsed_time // 60
+    elapsed_time_seconds = round(elapsed_time % 60)
+    print('{} {} {} {} {} {} {}'.format('Processing completed on ', counter, ' equities in ', elapsed_time_minutes,
+                                        ' minutes and ', elapsed_time_seconds, ' seconds.'))
+
+
 def check_watchlist():
     start_time = time.time()
     counter = 0
@@ -119,7 +150,7 @@ def check_watchlist():
         RSI_status = RSI_checker(stock)
         output_item = [stock, MOM_codes[MOM_status], RSI_codes[RSI_status]]
         output_list.append(output_item)
-        if MOM_status and RSI_status == 2:
+        if MOM_status == 2 and RSI_status == 2:
             print('{} {}'.format(stock, ' is a candidate!'))
         else:
             if debug_mode:
@@ -133,7 +164,9 @@ def check_watchlist():
     elapsed_time = end_time - start_time
     elapsed_time_minutes = elapsed_time // 60
     elapsed_time_seconds = round(elapsed_time % 60)
-    print('{} {} {} {} {} {} {}'.format('Processing completed on ', counter, ' equities in ', elapsed_time_minutes, ' minutes and ', elapsed_time_seconds, ' seconds.'))
+    print('{} {} {} {} {} {} {}'.format('Processing completed on ', counter, ' equities in ', elapsed_time_minutes,
+                                        ' minutes and ', elapsed_time_seconds, ' seconds.'))
 
 
 check_watchlist()
+# check_portfolio()
