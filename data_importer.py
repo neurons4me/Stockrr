@@ -22,7 +22,7 @@ def request_time_series_daily_long(symbol):
 
 def request_RSI(symbol):
     url_part_one = 'https://www.alphavantage.co/query?function=RSI&symbol='
-    url_part_two = '&interval=daily&time_period=100&series_type=close&apikey='
+    url_part_two = '&interval=daily&time_period=14&series_type=close&apikey='
     API_key = 'EQUA0WMPJLI4A9SQ'
     url = str(url_part_one) + str(symbol) + str(url_part_two) + str(API_key)
     r = requests.get(url)
@@ -31,7 +31,7 @@ def request_RSI(symbol):
 
 def request_MOM(symbol):
     url_part_one = 'https://www.alphavantage.co/query?function=MOM&symbol='
-    url_part_two = '&interval=daily&time_period=100&series_type=close&apikey='
+    url_part_two = '&interval=daily&time_period=14&series_type=close&apikey='
     API_key = 'EQUA0WMPJLI4A9SQ'
     url = str(url_part_one) + str(symbol) + str(url_part_two) + str(API_key)
     r = requests.get(url)

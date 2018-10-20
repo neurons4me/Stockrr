@@ -2,7 +2,7 @@ import time
 import data_importer
 import data_exporter
 
-debug_mode = False
+debug_mode = True
 RSI_codes = {
     0: "Overbought",
     1: "Neutral",
@@ -170,3 +170,18 @@ def check_watchlist():
 
 check_watchlist()
 # check_portfolio()
+#TODO build self buying and selling simulator using this data
+#TODO add robust logging to the simulator
+#TODO bolinger bands?
+#TODO for sure add a check of major indexes and a check of a stocks 50 day performance
+
+#have the daily checking function help weed out stocks that won't be relevant in the short term and pare down the watchlist file
+# (for example, in addition to the actual hits it should shortlist the items that are oversold, or near that point and have non-postive momentum)
+
+#Strategy of simulator
+#Buy if RSI is oversold and momentum is not negative and 50 day performance beats index (indicating an upward trend)
+#Sell if price reaches take-profit price/stop-loss price or if RSI is overbought and price is approaching top bolinger band line
+
+#Rules
+#Cant trade in more than 10% of the average (14 day) daily volume
+#no more than 10% of value can be in a single position
